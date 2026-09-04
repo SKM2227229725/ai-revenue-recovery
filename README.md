@@ -2,7 +2,7 @@
 
 > AI-powered payment recovery platform that detects failed payments, diagnoses failure reasons, predicts recovery probability, prioritizes cases, and recommends recovery actions.
 
-Built for **Razorpay AI Buildathon 2026 — Track 03: Revenue Recovery**
+**Built for Razorpay AI Buildathon 2026 — Track 03: Revenue Recovery**
 
 ---
 
@@ -28,66 +28,135 @@ Policy Engine
 Recovery Action
       ↓
 Audit Trail
+```
 
-✨ Features
-🤖 AI Failure Diagnosis — Claude analyzes why a payment failed.
-🧠 ML Recovery Prediction — Random Forest predicts recovery probability.
-🎯 Priority Scoring — Ranks cases from Critical to Low.
-⚡ Automated Recovery — Retry, Reminder, Payment Link, Escalation.
-📊 Analytics Dashboard — Revenue at risk, recovered revenue, recovery rate.
-💳 Payment Analytics — Payment methods, customer segments, monthly trends.
-🔎 Transaction Explorer — Search and filter failed transactions.
-🧾 Audit Trail — Tracks AI decisions, actions, and results.
-🔔 Notifications — Real-time recovery updates.
-🌙 Dark Mode + Responsive UI
+---
 
+## ✨ Features
 
+- 🤖 **AI Failure Diagnosis** — Claude analyzes why a payment failed.
+- 🧠 **ML Recovery Prediction** — Random Forest predicts recovery probability.
+- 🎯 **Priority Scoring** — Ranks cases from Critical to Low.
+- ⚡ **Automated Recovery** — Retry, Reminder, Payment Link, Escalation.
+- 📊 **Analytics Dashboard** — Revenue at risk, recovered revenue, recovery rate.
+- 💳 **Payment Analytics** — Payment methods, customer segments, monthly trends.
+- 🔎 **Transaction Explorer** — Search and filter failed transactions.
+- 🧾 **Audit Trail** — Tracks AI decisions, actions, and results.
+- 🔔 **Notifications** — Recovery status updates.
+- 🌙 **Dark Mode + Responsive UI**
 
-🛠️ Tech Stack
-Layer	Technology
-Frontend	React 18, Vite, Tailwind CSS
-Charts	Recharts
-Backend	Django, Django REST Framework
-Database	PostgreSQL / SQLite
-AI	Anthropic Claude
-ML	Scikit-learn
-Data	Pandas, NumPy
-Model	Random Forest
-Deployment	Vercel + Render
+---
 
+## 🏗️ Architecture
 
+```mermaid
+flowchart TB
 
-🧠 ML Model
+    USER[Business User]
 
-Algorithm: Random Forest Classifier
+    subgraph FRONTEND["Frontend - React + Vite"]
+        DASH[Dashboard]
+        TRANS[Transactions]
+        REC[Recovery Center]
+        ANALYTICS[Analytics]
+        AUDIT[Audit Trail]
+        EXPLAIN[AI Explainability]
+    end
 
-Features:
+    subgraph BACKEND["Backend - Django REST"]
+        API[REST API]
+        ENGINE[Recovery Engine]
+    end
 
+    subgraph INTELLIGENCE["AI + ML"]
+        CLAUDE[Claude AI]
+        RF[Random Forest]
+        POLICY[Priority + Policy Engine]
+    end
+
+    DB[(PostgreSQL)]
+    RAZORPAY[Razorpay]
+
+    USER --> FRONTEND
+    FRONTEND --> API
+    API --> ENGINE
+
+    ENGINE --> CLAUDE
+    ENGINE --> RF
+
+    CLAUDE --> POLICY
+    RF --> POLICY
+
+    POLICY --> RAZORPAY
+    POLICY --> DB
+    AUDIT --> DB
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite, Tailwind CSS |
+| Charts | Recharts |
+| Backend | Django, Django REST Framework |
+| Database | PostgreSQL / SQLite |
+| AI | Anthropic Claude |
+| ML | Scikit-learn |
+| Data | Pandas, NumPy |
+| Model | Random Forest |
+| Deployment | Vercel + Render |
+
+---
+
+## 🧠 ML Model
+
+**Algorithm:** Random Forest Classifier
+
+### Features
+
+```text
 Transaction Amount
 Retry Count
 Payment Method
 Failure Reason
 Customer Segment
+```
 
-Training Data: 650 synthetic transactions
-Documented Accuracy: 66.67%
+**Training Data:** 650 synthetic transactions  
+**Documented Accuracy:** 66.67%
 
-🔌 API Endpoints
-Method	Endpoint	Description
-GET	/api/recovery/metrics/	Dashboard metrics
-GET	/api/recovery/transactions/	All transactions
-POST	/api/recovery/run/	Run recovery workflow
-GET	/api/recovery/audit/	Audit logs
-GET	/api/recovery/ai/analyze/:id	AI transaction analysis
-📊 Example Metrics
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/recovery/metrics/` | Dashboard metrics |
+| GET | `/api/recovery/transactions/` | All transactions |
+| POST | `/api/recovery/run/` | Run recovery workflow |
+| GET | `/api/recovery/audit/` | Audit logs |
+| GET | `/api/recovery/ai/analyze/:id` | AI transaction analysis |
+
+### Example Response
+
+```json
 {
   "totalAtRisk": 68240,
   "recovered": 22179,
   "recoveryRate": 32.5,
   "activeCases": 9
 }
-📁 Project Structure
+```
+
+---
+
+## 📁 Project Structure
+
+```text
 AI Revenue Recovery/
+│
 ├── backend/
 │   ├── config/
 │   ├── api/
@@ -110,8 +179,15 @@ AI Revenue Recovery/
 │
 └── docs/
     └── screenshots/
-⚙️ Setup
-Backend
+```
+
+---
+
+## ⚙️ Setup
+
+### Backend
+
+```bash
 cd backend
 
 python -m venv venv
@@ -123,42 +199,88 @@ pip install -r requirements.txt
 
 python manage.py migrate
 python manage.py runserver
-Frontend
+```
+
+### Frontend
+
+```bash
 cd frontend
 
 npm install
 npm run dev
-Train Model
+```
+
+### Train Model
+
+```bash
 python models/train_model.py
-🔐 Environment Variables
+```
+
+---
+
+## 🔐 Environment Variables
+
+Create a `.env` file in the backend:
+
+```env
 ANTHROPIC_API_KEY=your_api_key
 DATABASE_URL=your_database_url
+```
 
-Never commit API keys or secrets to GitHub.
+> ⚠️ Never commit API keys or secrets to GitHub.
 
-📸 Screenshots
-Dashboard
+---
 
-Payment Analytics
+## 📸 Screenshots
 
-AI Explainability
+### Dashboard
 
-Audit Trail
+![Dashboard](docs/screenshots/dashboard.png)
 
-🚀 Deployment
-Frontend — Vercel
+### Payment Analytics
+
+![Payment Analytics](docs/screenshots/payment-analytics.png)
+
+### AI Explainability
+
+![AI Explainability](docs/screenshots/ai-explainability.png)
+
+### Audit Trail
+
+![Audit Trail](docs/screenshots/audit-trail.png)
+
+---
+
+## 🚀 Deployment
+
+### Frontend — Vercel
+
+```bash
 npm run build
 npx vercel --prod
-Backend — Render
-Build:
+```
+
+### Backend — Render
+
+**Build Command**
+
+```bash
 pip install -r requirements.txt
+```
 
-Start:
+**Start Command**
+
+```bash
 gunicorn config.wsgi:application
-🎯 Why This Project?
+```
 
-Unlike a traditional failed-payment system, our platform:
+---
 
+## 🎯 Why This Project?
+
+Unlike a traditional failed-payment system, our platform follows a complete intelligent recovery pipeline:
+
+```text
 Detect
   ↓
 Diagnose
@@ -172,24 +294,61 @@ Decide
 Recover
   ↓
 Audit
+```
 
-It combines AI diagnosis + ML prediction + business rules + automated recovery to focus on the payments with the highest recovery potential.
+It combines:
 
-🏆 Built For
+- AI diagnosis
+- ML recovery prediction
+- Priority scoring
+- Business rules
+- Automated recovery
+- Complete auditability
 
-Razorpay AI Buildathon 2026
+### 💡 Core Value
 
-Track 03 — Revenue Recovery
+> **Recover the payments with the highest recovery potential instead of treating every failed payment the same way.**
 
-"Find revenue that's slipping away and win it back."
+---
 
-📄 License
+## 🏆 Built For
+
+**Razorpay AI Buildathon 2026**
+
+### Track 03 — Revenue Recovery
+
+> **"Find revenue that's slipping away and win it back."**
+
+---
+
+## 🔮 Future Improvements
+
+- Real Razorpay payment execution
+- Larger production datasets
+- Automated retry scheduling
+- A/B testing of recovery strategies
+- Advanced fraud/risk signals
+- Recovery ROI analytics
+- Real-time payment webhooks
+- Explainable ML predictions
+
+---
+
+## 📄 License
 
 MIT License
 
-🔗 Links
-GitHub: https://github.com/your-username/ai-revenue-recovery
-Live Demo: https://your-demo-url.vercel.app
+---
 
+## 🔗 Links
 
-<img width="2437" height="1695" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/a60222fa-cef4-47e9-bc50-b835fc77f755" />
+- **GitHub:** `https://github.com/your-username/ai-revenue-recovery`
+- **Live Demo:** `https://your-demo-url.vercel.app`
+
+---
+
+## ⭐ Final Value Proposition
+
+> **Detect → Diagnose → Predict → Prioritize → Recover → Audit**
+
+**Built with ❤️ for Razorpay AI Buildathon 2026.**
