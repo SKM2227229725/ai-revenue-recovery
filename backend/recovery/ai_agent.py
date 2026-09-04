@@ -1,17 +1,18 @@
 """
 AI Agent - Complete Recovery Intelligence
-Combines Claude AI, ML Model, Priority Score, and Message Generator
+Combines Claude AI, Priority Score, and Message Generator
+ML model disabled for Render deployment
 """
 
 import os
 import json
-import sys
-import joblib
-import pandas as pd
+import random
 from django.conf import settings
 from .models import Transaction, AuditLog, RecoveryResult
 
+# ============================================
 # Try to import Anthropic (optional)
+# ============================================
 try:
     from anthropic import Anthropic
     HAS_ANTHROPIC = True
@@ -21,49 +22,54 @@ except ImportError:
 
 
 class RecoveryAgent:
-    """Complete AI Recovery Agent"""
+    """
+    Complete AI Recovery Agent
+    
+    Features:
+    - Claude AI diagnosis (optional)
+    - Priority scoring (weighted formula)
+    - Action decision engine
+    - Personalized message generation
+    - Audit logging
+    
+    ML Model disabled for Render deployment (avoids segmentation fault)
+    """
     
     def __init__(self):
+        # ============================================
         # Claude AI (optional)
+        # ============================================
         self.api_key = os.getenv('ANTHROPIC_API_KEY', '')
         self.client = None
         if HAS_ANTHROPIC and self.api_key:
-            self.client = Anthropic(api_key=self.api_key)
+            try:
+                self.client = Anthropic(api_key=self.api_key)
+                print("✅ Claude AI initialized")
+            except Exception as e:
+                print(f"⚠️ Claude initialization failed: {e}")
+                self.client = None
         
-        # ML Model - Load from root/models folder
+        # ============================================
+        # ML Model - DISABLED FOR RENDER
+        # ============================================
         self.model = None
         self.features = []
-        self._load_model()
+        
+        # ❌ ML model loading disabled (causes segmentation fault on Render)
+        # self._load_model()
+        print("ℹ️ ML model disabled for Render deployment")
     
     def _load_model(self):
-        """Load the trained ML model"""
-        # Get the project root directory
-        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        root_dir = os.path.dirname(backend_dir)
-        
-        model_paths = [
-            os.path.join(root_dir, 'models', 'recovery_model.pkl'),
-            os.path.join(backend_dir, 'models', 'recovery_model.pkl'),
-            os.path.join(root_dir, '..', 'models', 'recovery_model.pkl'),
-        ]
-        
-        for model_path in model_paths:
-            if os.path.exists(model_path):
-                try:
-                    data = joblib.load(model_path)
-                    self.model = data['model']
-                    self.features = data['features']
-                    print(f"✅ Model loaded from: {model_path}")
-                    return
-                except Exception as e:
-                    print(f"⚠️ Error loading model: {e}")
-        
-        print("⚠️ ML Model not found. Using fallback predictions.")
+        """Load the trained ML model - DISABLED"""
+        # This method is intentionally empty to avoid segmentation fault
+        pass
     
     def analyze_transaction(self, transaction):
         """
         Complete analysis of a transaction
-        Returns: {
+        
+        Returns:
+        {
             'priority_score': 0-100,
             'priority_level': 'high/medium/low',
             'ml_probability': 0-100,
@@ -79,8 +85,8 @@ class RecoveryAgent:
         priority_score = self._calculate_priority(transaction)
         priority_level = self._get_priority_level(priority_score)
         
-        # 2. ML Prediction
-        ml_probability = self._predict_recovery(transaction)
+        # 2. ML Prediction - FIXED VALUE (ML disabled)
+        ml_probability = 50.0  # Default value
         
         # 3. AI Diagnosis (Claude or Fallback)
         ai_diagnosis = self._diagnose(transaction)
@@ -108,7 +114,16 @@ class RecoveryAgent:
         }
     
     def _calculate_priority(self, transaction):
-        """Calculate priority score (0-100)"""
+        """
+        Calculate priority score (0-100)
+        
+        Weighted Formula:
+        - Amount: 40%
+        - Recoverability: 25%
+        - Customer Segment: 15%
+        - Customer History: 10%
+        - Retry Count: 10%
+        """
         weights = {
             'amount': 0.40,
             'recoverability': 0.25,
@@ -117,11 +132,15 @@ class RecoveryAgent:
             'retry': 0.10
         }
         
-        # Amount score
+        # ============================================
+        # 1. Amount Score (40%)
+        # ============================================
         max_amount = 50000
         amount_score = min(float(transaction.amount) / max_amount, 1.0) * 100
         
-        # Recoverability score
+        # ============================================
+        # 2. Recoverability Score (25%)
+        # ============================================
         recoverability_map = {
             'Network Failure': 0.90,
             'Bank Server Issue': 0.80,
@@ -136,12 +155,16 @@ class RecoveryAgent:
             getattr(transaction, 'failure_reason', None), 0.25
         ) * 100
         
-        # Segment score
+        # ============================================
+        # 3. Customer Segment Score (15%)
+        # ============================================
         segment = getattr(transaction, 'customer_segment', 'Regular')
         segment_map = {'Premium': 1.0, 'Regular': 0.65, 'New': 0.35}
         segment_score = segment_map.get(segment, 0.5) * 100
         
-        # History score
+        # ============================================
+        # 4. Customer History Score (10%)
+        # ============================================
         history = getattr(transaction, 'customer_history', 'Regular Customer')
         history_map = {
             'Loyal Customer': 1.0,
@@ -151,11 +174,15 @@ class RecoveryAgent:
         }
         history_score = history_map.get(history, 0.3) * 100
         
-        # Retry score
+        # ============================================
+        # 5. Retry Count Score (10%)
+        # ============================================
         retry_count = getattr(transaction, 'retry_count', 0)
         retry_score = max(1.0 - (retry_count * 0.2), 0.2) * 100
         
-        # Weighted total
+        # ============================================
+        # Weighted Total
+        # ============================================
         total = (
             weights['amount'] * amount_score +
             weights['recoverability'] * recoverability_score +
@@ -167,6 +194,7 @@ class RecoveryAgent:
         return round(total, 2)
     
     def _get_priority_level(self, score):
+        """Convert score to priority level"""
         if score >= 65:
             return 'high'
         elif score >= 40:
@@ -175,33 +203,11 @@ class RecoveryAgent:
             return 'low'
     
     def _predict_recovery(self, transaction):
-        """Predict recovery likelihood using ML model"""
-        if not self.model or not self.features:
-            return 50.0
-        
-        try:
-            # Prepare features
-            data = {
-                'amount': [float(transaction.amount)],
-                'retry_count': [int(getattr(transaction, 'retry_count', 0))],
-                'payment_method': [getattr(transaction, 'payment_method', 'UPI')],
-                'failure_reason': [getattr(transaction, 'failure_reason', 'Unknown')],
-                'customer_segment': [getattr(transaction, 'customer_segment', 'New')]
-            }
-            X = pd.get_dummies(pd.DataFrame(data))
-            
-            # Align columns
-            for col in self.features:
-                if col not in X.columns:
-                    X[col] = 0
-            X = X[self.features]
-            
-            # Predict
-            prob = self.model.predict_proba(X)[0][1]
-            return round(prob * 100, 2)
-        except Exception as e:
-            print(f"⚠️ Prediction error: {e}")
-            return 50.0
+        """
+        Predict recovery likelihood - FIXED VALUE
+        ML model disabled for Render
+        """
+        return 50.0  # Default value
     
     def _diagnose(self, transaction):
         """Diagnose using Claude AI or fallback"""
@@ -282,12 +288,22 @@ class RecoveryAgent:
             }
     
     def _decide_action(self, transaction, priority_score, ml_probability, ai_diagnosis):
-        """Decision engine combining all signals"""
+        """
+        Decision engine combining all signals
+        
+        Policy Rules:
+        - Max retry count: 3
+        - Fraud detection: Auto-block
+        - Low ML probability: Escalate
+        - Low priority: Send reminder
+        """
         action = ai_diagnosis.get('recommended_action', 'escalate_to_human')
         confidence = ai_diagnosis.get('confidence', 0.5)
         rationale = ai_diagnosis.get('rationale', 'AI recommendation')
         
-        # Override based on policy rules
+        # ============================================
+        # Policy Rule 1: Max retry count
+        # ============================================
         if getattr(transaction, 'retry_count', 0) >= 3:
             return {
                 'action': 'escalate_to_human',
@@ -295,6 +311,9 @@ class RecoveryAgent:
                 'rationale': 'Max retry count exceeded'
             }
         
+        # ============================================
+        # Policy Rule 2: Fraud detection
+        # ============================================
         if getattr(transaction, 'failure_reason', '') and 'fraud' in str(transaction.failure_reason).lower():
             return {
                 'action': 'fraud_review',
@@ -302,6 +321,9 @@ class RecoveryAgent:
                 'rationale': 'Fraud suspected - manual review needed'
             }
         
+        # ============================================
+        # Policy Rule 3: ML probability (disabled)
+        # ============================================
         if ml_probability < 30:
             return {
                 'action': 'escalate_to_human',
@@ -309,6 +331,9 @@ class RecoveryAgent:
                 'rationale': f'ML model predicts low recovery probability ({ml_probability}%)'
             }
         
+        # ============================================
+        # Policy Rule 4: Priority score
+        # ============================================
         if priority_score < 40:
             return {
                 'action': 'send_reminder',
@@ -336,7 +361,9 @@ class RecoveryAgent:
     def execute_recovery(self, transaction):
         """
         Execute full recovery workflow
-        Returns: {
+        
+        Returns:
+        {
             'success': bool,
             'amount_recovered': float,
             'action': str,
@@ -346,57 +373,76 @@ class RecoveryAgent:
         analysis = self.analyze_transaction(transaction)
         action = analysis['recommended_action']
         
+        # ============================================
         # Simulate execution based on action
-        import random
+        # ============================================
         recovered = False
         amount_recovered = 0
         
         if action == 'retry_payment':
-            # Retry based on ML probability
-            prob = analysis['ml_probability'] / 100
+            # Retry with 50% success rate (ML disabled)
+            prob = 0.5
             recovered = random.random() < prob
             if recovered:
                 amount_recovered = float(transaction.amount)
+                
         elif action in ['send_reminder', 'send_update_link']:
-            # These actions have lower success rate
+            # These actions have lower success rate (30%)
             recovered = random.random() < 0.3
             if recovered:
                 amount_recovered = float(transaction.amount)
+                
         elif action == 'escalate_to_human':
             # Escalation requires human intervention
             recovered = False
             amount_recovered = 0
         
-        # Save result
-        RecoveryResult.objects.create(
-            transaction=transaction,
-            is_recovered=recovered,
-            amount_recovered=amount_recovered,
-            action_taken=action
-        )
+        # ============================================
+        # Save result to database
+        # ============================================
+        try:
+            RecoveryResult.objects.create(
+                transaction=transaction,
+                is_recovered=recovered,
+                amount_recovered=amount_recovered,
+                action_taken=action
+            )
+        except Exception as e:
+            print(f"⚠️ Error saving RecoveryResult: {e}")
         
+        # ============================================
+        # Update transaction status
+        # ============================================
         if recovered:
-            transaction.status = 'recovered'
-            transaction.save()
+            try:
+                transaction.status = 'recovered'
+                transaction.save()
+            except Exception as e:
+                print(f"⚠️ Error updating transaction: {e}")
         
+        # ============================================
         # Create audit log
-        AuditLog.objects.create(
-            transaction=transaction,
-            action=action,
-            status='success' if recovered else 'failed',
-            details=json.dumps({
-                'priority_score': analysis['priority_score'],
-                'ml_probability': analysis['ml_probability'],
-                'confidence': analysis['confidence'],
-                'rationale': analysis['rationale']
-            })
-        )
+        # ============================================
+        try:
+            AuditLog.objects.create(
+                transaction=transaction,
+                action=action,
+                status='success' if recovered else 'failed',
+                details=json.dumps({
+                    'priority_score': analysis.get('priority_score', 50),
+                    'ml_probability': analysis.get('ml_probability', 50),
+                    'confidence': analysis.get('confidence', 0.5),
+                    'rationale': analysis.get('rationale', '')
+                })
+            )
+        except Exception as e:
+            print(f"⚠️ Error creating AuditLog: {e}")
         
         return {
             'success': recovered,
             'amount_recovered': amount_recovered,
             'action': action,
-            'message': analysis['message'],
-            'priority_score': analysis['priority_score'],
-            'priority_level': analysis['priority_level']
+            'message': analysis.get('message', 'Payment failed. Please try again.'),
+            'priority_score': analysis.get('priority_score', 50),
+            'priority_level': analysis.get('priority_level', 'medium')
         }
