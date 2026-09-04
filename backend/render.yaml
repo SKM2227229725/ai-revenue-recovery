@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: revenue-recovery-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: DATABASE_URL
+        fromDatabase:
+          name: revenue-recovery-db
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+databases:
+  - name: revenue-recovery-db
+    databaseName: recovery_db
+    user: recovery_user
+    
