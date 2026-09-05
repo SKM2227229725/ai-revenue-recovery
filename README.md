@@ -340,10 +340,7 @@ MIT License
 
 ---
 
-## 🔗 Links
 
-- **GitHub:** `https://github.com/your-username/ai-revenue-recovery`
-- **Live Demo:** `https://your-demo-url.vercel.app`
 
 ---
 
