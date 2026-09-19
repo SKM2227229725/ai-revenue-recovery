@@ -42,8 +42,8 @@ Audit Trail
 - 💳 **Payment Analytics** — Payment methods, customer segments, monthly trends.
 - 🔎 **Transaction Explorer** — Search and filter failed transactions.
 - 🧾 **Audit Trail** — Tracks AI decisions, actions, and results.
-- 🔔 **Notifications** — Recovery status updates.
-- 🌙 **Dark Mode + Responsive UI**
+- 🔔 **Notifications** — Recovery status updates as for  the  requrement .
+  
 
 ---
 
