@@ -2,7 +2,7 @@
 
 > AI-powered payment recovery platform that detects failed payments, diagnoses failure reasons, predicts recovery probability, prioritizes cases, and recommends recovery actions.
 
-**Built for Razorpay AI Buildathon 2026 — Track 03: Revenue Recovery**
+**Built for Razorpay AI Buildathon 2026 — Track 03: Revenue Recovery  System  **
 
 ---
 
